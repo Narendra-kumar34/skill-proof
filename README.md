@@ -25,10 +25,19 @@ Requires Node.js 24 (see `.nvmrc`).
 ```bash
 npm install
 cp .env.example .env.local   # then fill in values
+npm run db:migrate           # create tables
+npm run db:seed              # load skills, challenges and rubrics (idempotent)
 npm run dev
 ```
 
-Open http://localhost:3000.
+Open http://localhost:3000 and click **Try the demo** for a pre-populated account, or create your own.
+
+To get an admin account, set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` in `.env.local` before running `npm run db:seed`.
+
+## Database
+
+- Schema lives in `src/db/schema/` (Drizzle). After changing it, run `npm run db:generate` and commit the new file in `drizzle/`. CI fails if the schema and migrations drift apart.
+- Migrations run automatically on Vercel deploys (`vercel-build`). Seeding is a manual, one-off step so it never overwrites admin edits.
 
 ## Scripts
 

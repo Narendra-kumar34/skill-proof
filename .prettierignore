@@ -6,3 +6,4 @@ playwright-report
 package-lock.json
 next-env.d.ts
 docs
+drizzle

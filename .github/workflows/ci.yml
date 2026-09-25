@@ -19,6 +19,29 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
+    # Throwaway Postgres so migrations, the seed and the build run against a
+    # real database, exactly as they do on Vercel.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: skillproof
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/skillproof
+      # CI-only placeholder; real secrets live in Vercel project settings.
+      BETTER_AUTH_SECRET: ci-only-secret-not-used-in-any-real-environment
+      BETTER_AUTH_URL: http://localhost:3000
+
     steps:
       - uses: actions/checkout@v5
 
@@ -48,6 +71,22 @@ jobs:
 
       - name: Unit tests
         run: npm test
+
+      - name: Migrate database
+        run: npm run db:migrate
+
+      - name: Seed database
+        run: npm run db:seed
+
+      # Fails if the Drizzle schema changed without a committed migration.
+      - name: Check for schema drift
+        run: |
+          npx drizzle-kit generate
+          if [ -n "$(git status --porcelain drizzle)" ]; then
+            echo "::error::Schema changes without a migration. Run 'npm run db:generate' and commit the result."
+            git status --porcelain drizzle
+            exit 1
+          fi
 
       - name: Build
         run: npm run build
