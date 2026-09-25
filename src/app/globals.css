@@ -1,10 +1,19 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Score bands (status palette): strong ≥80, adequate 50-79, weak <50.
+     Always paired with a text label + icon, never colour alone. */
+  --color-score-strong: var(--score-strong);
+  --color-score-strong-track: var(--score-strong-track);
+  --color-score-adequate: var(--score-adequate);
+  --color-score-adequate-track: var(--score-adequate-track);
+  --color-score-weak: var(--score-weak);
+  --color-score-weak-track: var(--score-weak-track);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
@@ -81,9 +90,21 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --score-strong: #0ca30c;
+  --score-strong-track: #d6f0d6;
+  --score-adequate: #fab219;
+  --score-adequate-track: #fdefcf;
+  --score-weak: #d03b3b;
+  --score-weak-track: #f6d8d8;
 }
 
 .dark {
+  --score-strong: #0ca30c;
+  --score-strong-track: #163a16;
+  --score-adequate: #fab219;
+  --score-adequate-track: #43361a;
+  --score-weak: #d03b3b;
+  --score-weak-track: #45201f;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);

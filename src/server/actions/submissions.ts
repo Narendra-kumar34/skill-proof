@@ -49,6 +49,7 @@ export async function saveDraftAction(
       parsed.data.challengeId,
       parsed.data.content,
     );
+    updateTag(cacheTags.userActivity(user.id));
     return { savedAt: row.updatedAt.toISOString() };
   });
 }

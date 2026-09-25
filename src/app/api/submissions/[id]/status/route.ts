@@ -1,6 +1,8 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+import { cacheTags } from "@/lib/cache-tags";
 import { getSubmissionStatus } from "@/server/evaluation/service";
 import { getCurrentUser } from "@/server/session";
 
@@ -34,6 +36,11 @@ export async function GET(
       { error: "Not found" },
       { status: 404, headers: noStore },
     );
+  }
+  // Belt and braces: the evaluation run revalidates this tag itself, but make
+  // sure the page the client is about to refresh can't show a stale state.
+  if (status.status === "evaluated" || status.status === "failed") {
+    revalidateTag(cacheTags.userActivity(user.id), { expire: 0 });
   }
   return NextResponse.json(status, { headers: noStore });
 }
