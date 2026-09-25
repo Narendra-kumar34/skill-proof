@@ -6,6 +6,7 @@ export const siteConfig = {
   author: {
     name: "Narendra Kumar Cheemakurthi",
     github: "https://github.com/Narendra-kumar34",
-    linkedin: "https://www.linkedin.com/in/narendra-kumar-cheemakurthi-9438a9199/",
+    linkedin:
+      "https://www.linkedin.com/in/narendra-kumar-cheemakurthi-9438a9199/",
   },
 } as const;

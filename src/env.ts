@@ -21,7 +21,13 @@ const serverEnvSchema = z
     BETTER_AUTH_SECRET: z
       .string()
       .min(32, "BETTER_AUTH_SECRET must be at least 32 characters"),
-    BETTER_AUTH_URL: z.url(),
+    // Trailing slashes are stripped: origins never have one, and a mismatch
+    // makes Better Auth reject sign-ins with "Invalid origin".
+    BETTER_AUTH_URL: z.url().transform((url) => url.replace(/\/+$/, "")),
+    /** Hostnames Vercel injects at runtime (no protocol). */
+    VERCEL_URL: emptyAsUnset(z.string().optional()),
+    VERCEL_BRANCH_URL: emptyAsUnset(z.string().optional()),
+    VERCEL_PROJECT_PRODUCTION_URL: emptyAsUnset(z.string().optional()),
     // Optional on purpose: without it the app still works and evaluations
     // fail gracefully (retryable) instead of the whole deployment crashing.
     GOOGLE_GENERATIVE_AI_API_KEY: emptyAsUnset(z.string().min(1).optional()),

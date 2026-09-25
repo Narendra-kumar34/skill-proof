@@ -145,11 +145,38 @@ async function seedAdmin(db: ReturnType<typeof drizzle<typeof schema>>) {
     where: eq(user.email, email),
   });
   if (existing) {
-    await db
-      .update(user)
-      .set({ role: "admin" })
-      .where(eq(user.id, existing.id));
-    console.log("Admin account already exists; ensured admin role.");
+    // The env vars are the source of truth: re-seeding also resets the
+    // password, so changing SEED_ADMIN_PASSWORD and re-running takes effect.
+    const passwordHash = await hashPassword(password);
+    await db.transaction(async (tx) => {
+      await tx
+        .update(user)
+        .set({ role: "admin", isAnonymous: false })
+        .where(eq(user.id, existing.id));
+      const updated = await tx
+        .update(account)
+        .set({ password: passwordHash, updatedAt: sql`now()` })
+        .where(
+          and(
+            eq(account.userId, existing.id),
+            eq(account.providerId, "credential"),
+          ),
+        )
+        .returning({ id: account.id });
+      if (updated.length === 0) {
+        await tx.insert(account).values({
+          id: randomUUID(),
+          accountId: existing.id,
+          providerId: "credential",
+          userId: existing.id,
+          password: passwordHash,
+          updatedAt: sql`now()`,
+        });
+      }
+    });
+    console.log(
+      "Admin account already existed; ensured admin role and reset password.",
+    );
     return;
   }
 

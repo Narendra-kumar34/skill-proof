@@ -11,9 +11,25 @@ import * as schema from "@/db/schema";
 import { MAX_NAME_LENGTH, normalizeDisplayName } from "@/domain/user";
 import { env } from "@/env";
 
+/**
+ * Origins allowed to call the auth API. Vercel serves one deployment on
+ * several hosts (production domain, branch URL, per-deployment URL), so the
+ * exact hosts Vercel reports for this deployment are trusted alongside
+ * BETTER_AUTH_URL. No wildcards: `*.vercel.app` would trust anyone's app.
+ */
+const trustedOrigins = [
+  env.BETTER_AUTH_URL,
+  ...[
+    env.VERCEL_PROJECT_PRODUCTION_URL,
+    env.VERCEL_BRANCH_URL,
+    env.VERCEL_URL,
+  ].flatMap((host) => (host ? [`https://${host}`] : [])),
+];
+
 export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
+  trustedOrigins,
   database: drizzleAdapter(db, { provider: "pg", schema }),
 
   emailAndPassword: {

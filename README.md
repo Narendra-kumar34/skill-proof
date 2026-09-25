@@ -4,9 +4,9 @@
 
 SkillProof is an AI-powered practical skill assessment platform for working professionals. Learners solve realistic workplace challenges, an AI grades each submission against an explicit rubric, and every result becomes evidence in a competency profile that shows what they can actually demonstrate, what they struggle with, and what to practise next.
 
-**Live demo:** _add your Vercel URL here_ · Click **Try the demo** for a pre-filled account (no sign-up).
+**Live demo:** [skillproof](https://skill-proof-swart.vercel.app/) · Click **Try the demo** for a pre-filled account (no sign-up).
 
-Built by _Your Name_ · [GitHub](https://github.com/your-username) · [LinkedIn](https://www.linkedin.com/in/your-profile)
+Built by Narendra Kumar Cheemakurthi · [GitHub](https://github.com/Narendra-kumar34) · [LinkedIn](https://www.linkedin.com/in/narendra-kumar-cheemakurthi-9438a9199/)
 
 ---
 
