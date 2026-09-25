@@ -12,6 +12,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getMyChallengeStats } from "@/server/queries/activity";
 import { getSkillBySlug, type SkillDetail } from "@/server/queries/catalog";
+import { getMySkillSummaries } from "@/server/profile";
+import { SkillProfilePanel } from "@/components/profile/skill-profile-panel";
 
 export async function generateMetadata({
   params,
@@ -41,6 +43,10 @@ async function SkillView({
           items={[{ label: "Skills", href: "/skills" }, { label: skill.name }]}
         />
       </PageHeader>
+
+      <Suspense fallback={<Skeleton className="h-72 rounded-xl" />}>
+        <SkillProfileSection skillId={skill.id} />
+      </Suspense>
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
         <section
@@ -83,6 +89,12 @@ async function SkillView({
       </div>
     </div>
   );
+}
+
+async function SkillProfileSection({ skillId }: { skillId: string }) {
+  const { summaries } = await getMySkillSummaries();
+  const summary = summaries.find((s) => s.skill.id === skillId);
+  return summary ? <SkillProfilePanel summary={summary} /> : null;
 }
 
 async function ChallengeListWithProgress({ skill }: { skill: SkillDetail }) {

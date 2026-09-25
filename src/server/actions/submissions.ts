@@ -9,6 +9,7 @@ import type { ActionResult } from "@/lib/action-result";
 import { cacheTags } from "@/lib/cache-tags";
 import { UserFacingError } from "@/server/errors";
 import {
+  deleteSubmission,
   retryEvaluation,
   runEvaluation,
   saveDraft,
@@ -88,5 +89,19 @@ export async function retryEvaluationAction(
     after(() => runEvaluation(parsed.data.submissionId));
     updateTag(cacheTags.userActivity(user.id));
   }
+  return result;
+}
+
+export async function deleteSubmissionAction(
+  input: z.input<typeof submissionIdSchema>,
+): Promise<ActionResult> {
+  const parsed = submissionIdSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid submission." };
+
+  const user = await requireUser();
+  const result = await safely(() =>
+    deleteSubmission(user, parsed.data.submissionId),
+  );
+  if (result.ok) updateTag(cacheTags.userActivity(user.id));
   return result;
 }

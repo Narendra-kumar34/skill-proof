@@ -2,7 +2,18 @@ import "server-only";
 
 import type { GoogleLanguageModelOptions } from "@ai-sdk/google";
 import { generateText, Output } from "ai";
-import { and, asc, count, eq, gt, lt, max, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  gt,
+  inArray,
+  lt,
+  max,
+  or,
+  sql,
+} from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 
 import { evaluationConfig } from "@/config/evaluation";
@@ -182,6 +193,41 @@ export async function retryEvaluation(
     .returning({ id: submissions.id });
   if (!row) {
     throw new UserFacingError("This submission is already being evaluated.");
+  }
+}
+
+/**
+ * Deletes a draft or a finished attempt (and its evaluation). In-flight
+ * evaluations can't be deleted, so a background run never loses its row.
+ */
+export async function deleteSubmission(
+  user: CurrentUser,
+  submissionId: string,
+): Promise<void> {
+  const deleted = await db
+    .delete(submissions)
+    .where(
+      and(
+        eq(submissions.id, submissionId),
+        eq(submissions.userId, user.id),
+        inArray(submissions.status, ["draft", "evaluated", "failed"]),
+      ),
+    )
+    .returning({ id: submissions.id });
+
+  if (deleted.length === 0) {
+    const exists = await db.query.submissions.findFirst({
+      where: and(
+        eq(submissions.id, submissionId),
+        eq(submissions.userId, user.id),
+      ),
+      columns: { id: true },
+    });
+    throw new UserFacingError(
+      exists
+        ? "This attempt is being evaluated and can't be deleted yet."
+        : "Submission not found.",
+    );
   }
 }
 

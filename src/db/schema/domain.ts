@@ -273,9 +273,11 @@ export const evaluationRuns = pgTable(
   "evaluation_runs",
   {
     id: uuid().primaryKey().defaultRandom(),
-    submissionId: uuid()
-      .notNull()
-      .references(() => submissions.id, { onDelete: "cascade" }),
+    // Set null (not cascade): deleting a submission must not erase the usage
+    // record, or delete-and-resubmit would bypass the rate limit.
+    submissionId: uuid().references(() => submissions.id, {
+      onDelete: "set null",
+    }),
     userId: text()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),

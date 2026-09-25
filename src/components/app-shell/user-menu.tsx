@@ -27,7 +27,7 @@ export async function UserMenu() {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm" aria-label="Account menu">
             <UserIcon aria-hidden />
-            <span className="max-w-32 truncate">{user.name}</span>
+            <span className="max-w-32 truncate max-sm:hidden">{user.name}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">

@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 const items: Array<{ href: Route; label: string }> = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/skills", label: "Skills" },
+  { href: "/history", label: "History" },
 ];
 
 /**

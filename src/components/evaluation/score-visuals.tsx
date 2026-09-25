@@ -47,7 +47,6 @@ export function BandLabel({
   className?: string;
 }) {
   const band = scoreBand(score);
-  const Icon = BAND_STYLES[band].icon;
   return (
     <span
       className={cn(
@@ -55,17 +54,33 @@ export function BandLabel({
         className,
       )}
     >
-      <Icon
-        aria-hidden
-        className={cn(
-          "size-3.5",
-          band === "strong" && "text-score-strong",
-          band === "adequate" && "text-score-adequate",
-          band === "weak" && "text-score-weak",
-        )}
-      />
+      <BandIcon score={score} />
       {bandLabel[band]}
     </span>
+  );
+}
+
+/** Decorative band icon; pair it with visible text (label or score). */
+export function BandIcon({
+  score,
+  className,
+}: {
+  score: number;
+  className?: string;
+}) {
+  const band = scoreBand(score);
+  const Icon = BAND_STYLES[band].icon;
+  return (
+    <Icon
+      aria-hidden
+      className={cn(
+        "size-3.5 shrink-0",
+        band === "strong" && "text-score-strong",
+        band === "adequate" && "text-score-adequate",
+        band === "weak" && "text-score-weak",
+        className,
+      )}
+    />
   );
 }
 

@@ -103,3 +103,54 @@ async function challengeStats(
   }
   return stats;
 }
+
+/**
+ * Every submission the signed-in learner has made (drafts included), with its
+ * challenge, skill and evaluation. One cached read feeds the dashboard, skill
+ * profiles and history, so they are always consistent with each other.
+ */
+export async function getMyActivityOverview() {
+  const user = await requireUser();
+  return activityOverview(user.id);
+}
+
+async function activityOverview(userId: string) {
+  "use cache";
+  cacheTag(cacheTags.userActivity(userId));
+  cacheLife("minutes");
+
+  return db.query.submissions.findMany({
+    where: eq(submissions.userId, userId),
+    orderBy: desc(submissions.updatedAt),
+    columns: {
+      id: true,
+      challengeId: true,
+      status: true,
+      attemptNumber: true,
+      submittedAt: true,
+      updatedAt: true,
+      failureReason: true,
+    },
+    with: {
+      challenge: {
+        columns: { id: true, slug: true, title: true, skillId: true },
+        with: { skill: { columns: { id: true, slug: true, name: true } } },
+      },
+      evaluation: {
+        columns: {
+          overallScore: true,
+          criterionScores: true,
+          recommendationReason: true,
+          createdAt: true,
+        },
+        with: {
+          recommendedChallenge: {
+            columns: { id: true, slug: true, title: true },
+          },
+        },
+      },
+    },
+  });
+}
+
+export type ActivityItem = Awaited<ReturnType<typeof activityOverview>>[number];

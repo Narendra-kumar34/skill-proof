@@ -10,8 +10,8 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="flex flex-1 flex-col">
       <header className="border-b">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <nav aria-label="Main" className="flex items-center gap-4 sm:gap-6">
+        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
+          <nav aria-label="Main" className="flex items-center gap-2 sm:gap-6">
             <Link href="/dashboard" className="font-semibold tracking-tight">
               {siteConfig.name}
             </Link>

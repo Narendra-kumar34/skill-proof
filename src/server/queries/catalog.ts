@@ -93,3 +93,42 @@ export type SkillDetail = NonNullable<
 export type ChallengeDetail = NonNullable<
   Awaited<ReturnType<typeof getChallengeBySlug>>
 >;
+
+/** Every published skill with the structure needed to build profiles. */
+export async function getProfileCatalog() {
+  "use cache";
+  cacheTag(cacheTags.catalog);
+  cacheLife("hours");
+
+  const rows = await db.query.skills.findMany({
+    where: eq(skills.status, "published"),
+    orderBy: asc(skills.sortOrder),
+    columns: { id: true, slug: true, name: true, summary: true },
+    with: {
+      competencies: {
+        orderBy: (c) => asc(c.sortOrder),
+        columns: { id: true, label: true },
+      },
+      challenges: {
+        where: (c) => eq(c.status, "published"),
+        columns: { id: true, slug: true, title: true, difficulty: true },
+        with: { criteria: { columns: { competencyId: true } } },
+      },
+    },
+  });
+
+  const order = { beginner: 0, intermediate: 1, advanced: 2 } as const;
+  return rows.map((s) => ({
+    ...s,
+    challenges: s.challenges
+      .map(({ criteria, ...c }) => ({
+        ...c,
+        competencyIds: [...new Set(criteria.map((cr) => cr.competencyId))],
+      }))
+      .sort((a, b) => order[a.difficulty] - order[b.difficulty]),
+  }));
+}
+
+export type CatalogSkill = Awaited<
+  ReturnType<typeof getProfileCatalog>
+>[number];
