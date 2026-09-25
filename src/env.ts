@@ -2,22 +2,37 @@ import "server-only";
 
 import { z } from "zod";
 
+/** Treats `KEY=""` (common in .env files and dashboards) as unset. */
+const emptyAsUnset = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((value) => (value === "" ? undefined : value), schema);
+
 /**
  * Server-side environment, validated once at startup so a misconfigured
  * deployment fails loudly instead of at the first request that needs a value.
  */
-const serverEnvSchema = z.object({
-  NODE_ENV: z
-    .enum(["development", "test", "production"])
-    .default("development"),
-  DATABASE_URL: z.url(),
-  BETTER_AUTH_SECRET: z
-    .string()
-    .min(32, "BETTER_AUTH_SECRET must be at least 32 characters"),
-  BETTER_AUTH_URL: z.url(),
-  // Optional until the evaluation pipeline lands (Phase 2).
-  GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1).optional(),
-});
+const serverEnvSchema = z
+  .object({
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
+    /** Set by Vercel: "production" | "preview" | "development". */
+    VERCEL_ENV: emptyAsUnset(z.string().optional()),
+    DATABASE_URL: z.url(),
+    BETTER_AUTH_SECRET: z
+      .string()
+      .min(32, "BETTER_AUTH_SECRET must be at least 32 characters"),
+    BETTER_AUTH_URL: z.url(),
+    // Optional on purpose: without it the app still works and evaluations
+    // fail gracefully (retryable) instead of the whole deployment crashing.
+    GOOGLE_GENERATIVE_AI_API_KEY: emptyAsUnset(z.string().min(1).optional()),
+    GEMINI_MODEL: emptyAsUnset(z.string().min(1).default("gemini-3.8-flash")),
+    /** "1" swaps Gemini for a deterministic mock (tests/E2E only). */
+    AI_MOCK: emptyAsUnset(z.enum(["0", "1"]).default("0")),
+  })
+  .refine((e) => !(e.AI_MOCK === "1" && e.VERCEL_ENV === "production"), {
+    message: "AI_MOCK must never be enabled in production",
+    path: ["AI_MOCK"],
+  });
 
 const parsed = serverEnvSchema.safeParse(process.env);
 

@@ -259,6 +259,43 @@ export const evaluations = pgTable(
   ],
 );
 
+export const evaluationRunOutcome = pgEnum("evaluation_run_outcome", [
+  "running",
+  "succeeded",
+  "failed",
+]);
+
+/**
+ * One row per AI evaluation call (including retries). Drives per-user and
+ * global rate limits, and records latency/token usage for cost monitoring.
+ */
+export const evaluationRuns = pgTable(
+  "evaluation_runs",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    submissionId: uuid()
+      .notNull()
+      .references(() => submissions.id, { onDelete: "cascade" }),
+    userId: text()
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    model: text().notNull(),
+    promptVersion: text().notNull(),
+    outcome: evaluationRunOutcome().notNull().default("running"),
+    /** Internal error classification for failed runs (never shown to users). */
+    errorCode: text(),
+    latencyMs: integer(),
+    inputTokens: integer(),
+    outputTokens: integer(),
+    startedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    finishedAt: timestamp({ withTimezone: true }),
+  },
+  (t) => [
+    index("evaluation_runs_user_started_idx").on(t.userId, t.startedAt),
+    index("evaluation_runs_started_idx").on(t.startedAt),
+  ],
+);
+
 // ---------------------------------------------------------------------------
 // Relations (for the relational query API)
 // ---------------------------------------------------------------------------

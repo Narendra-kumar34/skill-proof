@@ -23,6 +23,8 @@
     "db:seed": "tsx src/db/seed/run.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.80",
+    "ai": "^7.0.114",
     "better-auth": "^1.7.6",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",
