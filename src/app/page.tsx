@@ -6,6 +6,7 @@ import {
   type LucideIcon,
   RouteIcon,
   ScaleIcon,
+  TrendingUpIcon,
   TrophyIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -214,7 +215,11 @@ function SamplePreview() {
               </p>
               <p className="font-semibold">Attempt 2 result</p>
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-score-strong">+19</span> since
+                <TrendingUpIcon
+                  aria-hidden
+                  className="mr-1 inline size-4 text-score-strong"
+                />
+                <span className="font-medium text-foreground">+19</span> since
                 attempt 1
               </p>
             </div>

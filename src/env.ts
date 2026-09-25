@@ -26,6 +26,8 @@ const serverEnvSchema = z
     // fail gracefully (retryable) instead of the whole deployment crashing.
     GOOGLE_GENERATIVE_AI_API_KEY: emptyAsUnset(z.string().min(1).optional()),
     GEMINI_MODEL: emptyAsUnset(z.string().min(1).default("gemini-3.8-flash")),
+    /** Shared secret Vercel Cron sends to the housekeeping endpoint. */
+    CRON_SECRET: emptyAsUnset(z.string().min(16).optional()),
     /** "1" swaps Gemini for a deterministic mock (tests/E2E only). */
     AI_MOCK: emptyAsUnset(z.enum(["0", "1"]).default("0")),
   })

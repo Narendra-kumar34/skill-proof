@@ -15,9 +15,9 @@ permissions:
 
 jobs:
   verify:
-    name: Lint, typecheck, test, build
+    name: Lint, typecheck, test, build, e2e
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
 
     # Throwaway Postgres so migrations, the seed and the build run against a
     # real database, exactly as they do on Vercel.
@@ -88,5 +88,24 @@ jobs:
             exit 1
           fi
 
+      - name: Integration tests
+        env:
+          AI_MOCK: "1"
+        run: npm run test:integration
+
       - name: Build
         run: npm run build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

@@ -1,11 +1,34 @@
 import type { NextConfig } from "next";
 
+const isDev = process.env.NODE_ENV === "development";
+
 /**
- * Baseline security headers applied to every route.
- * A Content-Security-Policy is added separately once the app's
- * script/style sources are settled.
+ * Content-Security-Policy without nonces. Nonces would force every page to
+ * render dynamically, defeating Cache Components / Partial Prerendering, so
+ * inline scripts are allowed ('unsafe-inline', needed for Next's RSC payload).
+ * Everything else is locked to our own origin: no third-party scripts,
+ * no framing, no plugins, and forms can only post back to us.
+ * XSS is primarily prevented by React escaping and markdown rendered without
+ * raw HTML. Trade-off documented in the README.
  */
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' blob: data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  // Only behind HTTPS (Vercel); would break `next start` over plain http.
+  ...(process.env.VERCEL ? ["upgrade-insecure-requests"] : []),
+].join("; ");
+
+/** Security headers applied to every route. */
 const securityHeaders = [
+  { key: "Content-Security-Policy", value: contentSecurityPolicy },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },

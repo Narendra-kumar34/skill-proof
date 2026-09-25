@@ -3,10 +3,9 @@ export const siteConfig = {
   tagline: "Prove you can apply what you learn.",
   description:
     "Practise AI skills on realistic workplace scenarios, get rubric-based AI feedback, and build an evidence-backed skill profile.",
-  // Shown in the footer on every page (submission requirement).
   author: {
-    name: "Your Name", // TODO: replace
-    github: "https://github.com/your-username", // TODO: replace
-    linkedin: "https://www.linkedin.com/in/your-profile", // TODO: replace
+    name: "Narendra Kumar Cheemakurthi",
+    github: "https://github.com/Narendra-kumar34",
+    linkedin: "https://www.linkedin.com/in/narendra-kumar-cheemakurthi-9438a9199/",
   },
 } as const;

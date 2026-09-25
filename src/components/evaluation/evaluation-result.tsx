@@ -120,9 +120,11 @@ export function EvaluationResult({
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CheckIcon aria-hidden className="size-4 text-score-strong" />
-              What went well
+            <CardTitle className="text-base">
+              <h3 className="flex items-center gap-2">
+                <CheckIcon aria-hidden className="size-4 text-score-strong" />
+                What went well
+              </h3>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -141,9 +143,14 @@ export function EvaluationResult({
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <WrenchIcon aria-hidden className="size-4 text-score-adequate" />
-              What to improve
+            <CardTitle className="text-base">
+              <h3 className="flex items-center gap-2">
+                <WrenchIcon
+                  aria-hidden
+                  className="size-4 text-score-adequate"
+                />
+                What to improve
+              </h3>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -162,7 +169,9 @@ export function EvaluationResult({
       {/* Criterion breakdown */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Score breakdown</CardTitle>
+          <CardTitle className="text-base">
+            <h3>Score breakdown</h3>
+          </CardTitle>
           <p className="text-sm text-muted-foreground">
             Your overall score is the weighted average of these criteria.
           </p>
