@@ -1,4 +1,5 @@
-import { LogOutIcon, UserIcon } from "lucide-react";
+import { LogOutIcon, ShieldIcon, UserIcon } from "lucide-react";
+import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,14 @@ export async function UserMenu() {
             )}
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
+          {user.role === "admin" && (
+            <DropdownMenuItem asChild>
+              <Link href="/admin">
+                <ShieldIcon aria-hidden />
+                Admin
+              </Link>
+            </DropdownMenuItem>
+          )}
           <form action={signOut}>
             <DropdownMenuItem asChild>
               <button type="submit" className="w-full">

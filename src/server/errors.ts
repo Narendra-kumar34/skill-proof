@@ -9,13 +9,26 @@ export class UserFacingError extends Error {
   }
 }
 
-/** Postgres unique_violation, whether raw or wrapped by Drizzle. */
-export function isUniqueViolation(error: unknown): boolean {
+/** SQLSTATE code of a Postgres error, whether raw or wrapped by Drizzle. */
+function pgErrorCode(error: unknown): unknown {
   const code = (e: unknown) =>
     typeof e === "object" && e !== null && "code" in e ? e.code : undefined;
   const cause =
     typeof error === "object" && error !== null && "cause" in error
       ? error.cause
       : undefined;
-  return code(error) === "23505" || code(cause) === "23505";
+  return code(error) ?? code(cause);
 }
+
+/** Postgres unique_violation. */
+export const isUniqueViolation = (error: unknown) =>
+  pgErrorCode(error) === "23505";
+
+/**
+ * Deleting a row that is still referenced. `ON DELETE RESTRICT` raises
+ * restrict_violation (23001); `NO ACTION` raises foreign_key_violation (23503).
+ */
+export const isForeignKeyViolation = (error: unknown) => {
+  const code = pgErrorCode(error);
+  return code === "23503" || code === "23001";
+};

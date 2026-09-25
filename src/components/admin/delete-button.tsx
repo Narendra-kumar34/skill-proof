@@ -1,6 +1,8 @@
 "use client";
 
 import { Loader2Icon, Trash2Icon } from "lucide-react";
+import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
 import {
@@ -15,18 +17,28 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { deleteSubmissionAction } from "@/server/actions/submissions";
+import type { ActionResult } from "@/lib/action-result";
 
-export function DeleteSubmissionButton({
-  submissionId,
-  label,
-  isDraft,
-}: {
-  submissionId: string;
-  /** Used in the accessible name, e.g. "Attempt 2 of Classify feedback". */
-  label: string;
-  isDraft: boolean;
-}) {
+type DeleteButtonProps = {
+  id: string;
+  action: (input: { id: string }) => Promise<ActionResult>;
+  /** e.g. "skill “Prompt Engineering”" */
+  entity: string;
+  description: string;
+  redirectTo?: Route;
+  size?: "sm" | "icon";
+};
+
+/** Destructive action behind a confirmation dialog; server errors shown inline. */
+export function DeleteButton({
+  id,
+  action,
+  entity,
+  description,
+  redirectTo,
+  size = "sm",
+}: DeleteButtonProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -34,34 +46,44 @@ export function DeleteSubmissionButton({
   function confirm() {
     setError(null);
     startTransition(async () => {
-      const result = await deleteSubmissionAction({ submissionId });
-      if (result.ok) setOpen(false);
-      else setError(result.error);
+      const result = await action({ id });
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setOpen(false);
+      if (redirectTo) router.push(redirectTo);
     });
   }
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={`Delete ${label}`}
-        >
-          <Trash2Icon aria-hidden />
-        </Button>
+        {size === "icon" ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={`Delete ${entity}`}
+          >
+            <Trash2Icon aria-hidden />
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="text-destructive"
+          >
+            <Trash2Icon aria-hidden />
+            Delete
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>
-            {isDraft ? "Delete this draft?" : "Delete this attempt?"}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            {isDraft
-              ? "Your unsubmitted work on this challenge will be removed."
-              : "The submission and its evaluation will be removed, and your skill profile will no longer count it as evidence. This can't be undone."}
-          </AlertDialogDescription>
+          <AlertDialogTitle>Delete {entity}?</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         {error && (
           <p role="alert" className="text-sm text-destructive">
@@ -72,7 +94,7 @@ export function DeleteSubmissionButton({
           <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
-              e.preventDefault(); // keep the dialog open until the action completes
+              e.preventDefault();
               confirm();
             }}
             disabled={pending}
